@@ -1,24 +1,13 @@
 # SwiftRPC - Discord Rich Presence Library written in Swift
 
+Swift library for Discord Rich Presence
+
 ## Requirements
 1. macOS, Linux
 2. Swift 6+
 
 > [!WARNING]
 > RPC will not work in sandboxed apps
-
-## Adding SwordRP
-### CocoaPods
-Edit your Podfile to add this dependency:
-
-```ruby
-platform :osx, '10.11'
-
-target 'yourappnamehere' do
-  use_frameworks!
-  pod 'SwiftRPC'
-end
-```
 
 ## Example
 
