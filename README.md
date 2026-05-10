@@ -2,6 +2,8 @@
 
 Swift library for Discord Rich Presence
 
+<img width="467" height="256" alt="Screenshot 2026-05-10 at 20 54 00" src="https://github.com/user-attachments/assets/b17ad6aa-f0c7-4738-ae38-81638e357fab" />
+
 ## Requirements
 1. macOS, Linux
 2. Swift 6+
