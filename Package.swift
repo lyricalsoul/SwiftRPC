@@ -1,4 +1,4 @@
-// swift-tools-version:6.2.1
+// swift-tools-version:6.3.2
 
 import PackageDescription
 
@@ -9,7 +9,7 @@ let package = Package(
     ],
     dependencies: [
         // https://github.com/Kitura/BlueSocket
-        .package(url: "https://github.com/Kitura/BlueSocket.git", from: "2.0.4")
+        .package(url: "https://github.com/Kitura/BlueSocket", from: "2.0.4")
     ],
     targets: [
         .target(
