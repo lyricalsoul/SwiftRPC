@@ -73,7 +73,12 @@ public final class SwiftRPC: @unchecked Sendable {
 
         try? sendActivity(presence)
     }
-    
+
+    public func clearPresence() {
+        presence = nil
+        try? clearActivity()
+    }
+
     public func reply(to request: JoinRequest, with reply: JoinReply) {
         let json = """
         {

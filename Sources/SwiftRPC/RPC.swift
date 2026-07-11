@@ -194,6 +194,20 @@ extension SwiftRPC {
         try send(json, .frame)
     }
 
+    func clearActivity() throws {
+        let json = """
+      {
+        "cmd": "SET_ACTIVITY",
+        "args": {
+          "pid": \(pid)
+        },
+        "nonce": "\(UUID().uuidString)"
+      }
+      """
+
+        try send(json, .frame)
+    }
+
     public func updatePresence() {
         worker.asyncAfter(deadline: .now() + .seconds(15)) { [unowned self] in
             updatePresence()
