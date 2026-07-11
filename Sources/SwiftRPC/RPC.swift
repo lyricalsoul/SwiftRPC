@@ -179,28 +179,32 @@ extension SwiftRPC {
         }
     }
     
-    func updatePresence() {
+    func sendActivity(_ presence: RichPresence) throws {
+        let json = """
+      {
+        "cmd": "SET_ACTIVITY",
+        "args": {
+          "pid": \(pid),
+          "activity": \(String(data: try encoder.encode(presence), encoding: .utf8)!)
+        },
+        "nonce": "\(UUID().uuidString)"
+      }
+      """
+
+        try send(json, .frame)
+    }
+
+    public func updatePresence() {
         worker.asyncAfter(deadline: .now() + .seconds(15)) { [unowned self] in
             updatePresence()
-            
+
             guard let presence else {
                 return
             }
-            
+
             self.presence = nil
-            
-            let json = """
-          {
-            "cmd": "SET_ACTIVITY",
-            "args": {
-              "pid": \(pid),
-              "activity": \(String(data: try! encoder.encode(presence), encoding: .utf8)!)
-            },
-            "nonce": "\(UUID().uuidString)"
-          }
-          """
-            
-            try? send(json, .frame)
+
+            try? sendActivity(presence)
         }
     }
 }

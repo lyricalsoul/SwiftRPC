@@ -66,8 +66,12 @@ public final class SwiftRPC: @unchecked Sendable {
         logError("[SwiftRPC] Discord not detected")
     }
     
-    public func setPresence(_ presence: RichPresence) {
+    public func setPresence(_ presence: RichPresence, immediate: Bool = false) {
         self.presence = presence
+
+        guard immediate else { return }
+
+        try? sendActivity(presence)
     }
     
     public func reply(to request: JoinRequest, with reply: JoinReply) {
