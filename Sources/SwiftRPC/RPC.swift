@@ -36,53 +36,69 @@ extension SwiftRPC {
     }
     
     func receive() {
-        worker.asyncAfter(deadline: .now() + .milliseconds(handlerInterval)) { [unowned self] in
+        worker.asyncAfter(deadline: .now() + .milliseconds(handlerInterval)) { [weak self] in
+            guard let self else { return }
+
             guard let isConnected = socket?.isConnected, isConnected else {
                 disconnectHandler?(self, nil, nil)
                 delegate?.swiftRPCDidDisconnect(self, code: nil, message: nil)
                 return
             }
-            
-            receive()
-            
+
             do {
                 let headerPtr = UnsafeMutablePointer<Int8>.allocate(capacity: 8)
                 let headerRawPtr = UnsafeRawPointer(headerPtr)
-                
+
                 defer {
                     free(headerPtr)
                 }
-                
-                var response = try socket?.read(into: headerPtr, bufSize: 8, truncate: true)
-                
-                guard response! > 0 else {
+
+                let headerResponse = try socket?.read(into: headerPtr, bufSize: 8, truncate: true)
+
+                guard let headerResponse, headerResponse > 0 else {
+                    handleReadEOFIfNeeded()
                     return
                 }
-                
+
                 let opValue = headerRawPtr.load(as: UInt32.self)
                 let length = headerRawPtr.load(fromByteOffset: 4, as: UInt32.self)
-                
+
                 guard length > 0, let op = OP(rawValue: opValue) else {
+                    receive()
                     return
                 }
-                
+
                 let payloadPtr = UnsafeMutablePointer<Int8>.allocate(capacity: Int(length))
-                
+
                 defer {
                     free(payloadPtr)
                 }
-                
-                response = try socket?.read(into: payloadPtr, bufSize: Int(length), truncate: true)
-                
-                guard response! > 0 else { return }
-                
+
+                let payloadResponse = try socket?.read(into: payloadPtr, bufSize: Int(length), truncate: true)
+
+                guard let payloadResponse, payloadResponse > 0 else {
+                    handleReadEOFIfNeeded()
+                    return
+                }
+
                 let data = Data(bytes: UnsafeRawPointer(payloadPtr), count: Int(length))
-                
+
                 handlePayload(op, data)
+                receive()
             } catch {
-                return
+                receive()
             }
         }
+    }
+
+    private func handleReadEOFIfNeeded() {
+        guard socket?.remoteConnectionClosed == true else {
+            receive()
+            return
+        }
+        socket?.close()
+        disconnectHandler?(self, nil, nil)
+        delegate?.swiftRPCDidDisconnect(self, code: nil, message: nil)
     }
     
     func handshake() {
@@ -209,7 +225,9 @@ extension SwiftRPC {
     }
 
     public func updatePresence() {
-        worker.asyncAfter(deadline: .now() + .seconds(15)) { [unowned self] in
+        worker.asyncAfter(deadline: .now() + .seconds(15)) { [weak self] in
+            guard let self else { return }
+
             updatePresence()
 
             guard let presence else {
